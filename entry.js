@@ -6,7 +6,8 @@ const currentState = {
     currentNode: {
         data: {},
         selection: {}
-    }
+    },
+    startedDragAt: ""
 }
 
 
@@ -20,18 +21,9 @@ const radialMenuArrowTool = document.getElementById("menu-line-btn");
 radialMenu.addEventListener("mouseleave", () => {
     radialMenu.style.display = "none";
 })
-
-// radialMenuArrowTool.addEventListener("mousedown", () => {
-//         console.log("DRAG START")
-//         currentState.tempDrawingArrow.update();
-        
-// })
-
-
-
-
-
+let nodeMap = new Map();
 let graph = networkVizJS("graph",{
+    layoutType: "linkDistance",
     mouseOverNode: (d, selection) => {
         var bbox = selection.node().getBBox(),
             middleX = bbox.x + (bbox.width / 2),
@@ -60,6 +52,12 @@ let graph = networkVizJS("graph",{
         // Otherwise the radial menu vanishes when you mouse from
         // the node to the menu.
     },
+    mouseUpNode: (d, selection) => {
+        graph.addTriplet({subject: nodeMap.get(String(currentState.startedDragAt)),
+            predicate: {type: " "},
+            object: nodeMap.get(String(currentState.currentNode.data.hash))
+        })
+    },
     nodeDragStart: () => {
         radialMenu.style.display = "none";
     },
@@ -79,14 +77,13 @@ let graph = networkVizJS("graph",{
 
 // populate side menu
 let nodeId = 0;
-let nodeMap = new Map();
 (function (){
     var sidemenu = document.getElementById("side-menu");
     var createNodeButton = document.createElement('button');
     createNodeButton.innerText = "Create Node";
     createNodeButton.addEventListener("click", () => {
-        nodeMap.set(nodeId, {hash: String(nodeId), shortname: "Node "+nodeId});
-        let _node = nodeMap.get(nodeId);
+        nodeMap.set(String(nodeId), {hash: String(nodeId), shortname: "Node "+nodeId});
+        let _node = nodeMap.get(String(nodeId));
         graph.addNode(_node);
         nodeId ++;
     })
@@ -133,17 +130,22 @@ function makeAbsoluteContext(element, svgDocument) {
             .attr("x2", d => d.end.x)
             .attr("y2", d => d.end.y)
             .attr("stroke-width", 1)
-            .attr("stroke", "grey");
+            .attr("stroke", "grey")
+            .attr("pointer-events", "none");
     }
 
     let d3Data = [tempDrawingArrow];
 
     var mousedown = Rx.Observable.fromEvent(radialMenuArrowTool, "mousedown"),
         mousemove = Rx.Observable.fromEvent(document, 'mousemove'),
-        mouseescape = Rx.Observable.fromEvent(graph.getSVGElement().node(), "mouseleave");
+        //mouseescape = Rx.Observable.fromEvent(graph.getSVGElement().node(), "mouseleave"),
+        mouseUpOnNodeObservable = Rx.Observable.fromEvent(document, 'mouseup');
     
     var mousedrag = mousedown.flatMap(function (md) {
         console.log("mouseDown triggered observable")
+        md.preventDefault();
+        // Set current selection to the start dragged node.
+        currentState.startedDragAt = currentState.currentNode.data.hash;
         var bbox = currentState.currentNode.selection.node().getBBox(),
             middleX = bbox.x + (bbox.width / 2),
             middleY = bbox.y + (bbox.height / 2);
@@ -166,20 +168,27 @@ function makeAbsoluteContext(element, svgDocument) {
                 return pt.matrixTransform(svg.getScreenCTM().inverse());
             }
             return cursorPoint(mm)
-        }).takeUntil(mouseescape);
+        }).takeUntil(mouseUpOnNodeObservable);
     });
+
+    mouseUpOnNodeObservable.do(_ => {
+        tempDrawingArrow.end = {x: 0, y:0};
+        tempDrawingArrow.start = {x:0,y:0};
+    }).subscribe(function () {
+        updateLine();
+    })
 
     var sub = mousedrag.subscribe(function (d) {
         tempDrawingArrow.end = {x: d.x, y: d.y};
         
         updateLine();
     },
-    (error) => {
+    function (error) {
         console.log("ERROR", error)
     },
-    () => {
+    function (d) {
         // FINISHED CODE
-        console.log("FINISHED")
+        console.log("FINISHED", d)
         tempDrawingArrow.start = {x: 0, y:0}
         tempDrawingArrow.end = {x: 0, y:0}
         updateLine();
