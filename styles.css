@@ -22,3 +22,11 @@ body, html {
 #graph {
     width: 80%;
 }
+
+#radial-menu > div{
+    position: relative;
+    top: -50px;
+    left: -50px;
+    width: 0px;
+    height: 0px;
+}
