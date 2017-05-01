@@ -1,13 +1,17 @@
-var networkVizJS = require('networkVizJS');
 var d3 = require('d3');
 var Rx = require('rxjs');
+
+var makeAbsoluteContext = require('./src/graph/helpers/makeAbsoluteContext.js');
+
 
 const currentState = {
     currentNode: {
         data: {},
-        selection: {}
+        selection: {},
+        mouseOverNode: false
     },
-    startedDragAt: ""
+    startedDragAt: "",
+    nodeMap: new Map()
 }
 
 
@@ -16,93 +20,50 @@ const currentState = {
 
 // Get reference to the radial menu
 const radialMenu = document.getElementById("radial-menu");
+
+var graph = require('./src/graph/graph.js')(currentState, radialMenu);
+
+graph.nodeOptions.setNodeColor(() => "green");
+console.log(graph);
+// Set node click handler
+graph.nodeOptions.setClickNode((d, selection) => {
+    let userInput = window.prompt("Enter text for the node:", d.shortname)
+    if (userInput == null || userInput == ""){
+        return
+    }
+    d.shortname = userInput;
+    graph.restart.layout()
+});
+
+
+
 const radialMenuArrowTool = document.getElementById("menu-line-btn");
 
 radialMenu.addEventListener("mouseleave", () => {
     radialMenu.style.display = "none";
-})
-let nodeMap = new Map();
-let graph = networkVizJS("graph",{
-    layoutType: "linkDistance",
-    mouseOverNode: (d, selection) => {
-        var bbox = selection.node().getBBox(),
-            middleX = bbox.x + (bbox.width / 2),
-            middleY = bbox.y + (bbox.height / 2);
-
-        // generate a conversion function
-        var convert = makeAbsoluteContext(selection.node(), document.body);
-
-        // use it to calculate the absolute center of the element
-        var absoluteCenter = convert(middleX, middleY);
-
-
-        radialMenu.style.display = "block"
-        radialMenu.style.position = 'fixed';
-        radialMenu.style.top = absoluteCenter.y
-        radialMenu.style.left = absoluteCenter.x;
-        
-        // Set the current state for which node the menu is
-        // hovering over.
-        currentState.currentNode.data = d;
-        currentState.currentNode.selection = selection;
-        
-    },
-    mouseOutNode: (d, selection) => {
-        // Don't make the radial menu display = none here.
-        // Otherwise the radial menu vanishes when you mouse from
-        // the node to the menu.
-    },
-    mouseUpNode: (d, selection) => {
-        graph.addTriplet({subject: nodeMap.get(String(currentState.startedDragAt)),
-            predicate: {type: " "},
-            object: nodeMap.get(String(currentState.currentNode.data.hash))
-        })
-    },
-    nodeDragStart: () => {
-        radialMenu.style.display = "none";
-    },
-    clickNode: (d, selection) => {
-        let userInput = window.prompt("Enter text for the node:", d.shortname)
-        if (userInput == null || userInput == ""){
-            return
-        }
-        d.shortname = userInput;
-        graph.restart.layout()
-    }
 });
 
 
 
 
 
+
+
 // populate side menu
-let nodeId = 0;
-(function (){
+let nodeId = 0 ;
+(() => {
     var sidemenu = document.getElementById("side-menu");
     var createNodeButton = document.createElement('button');
     createNodeButton.innerText = "Create Node";
     createNodeButton.addEventListener("click", () => {
-        nodeMap.set(String(nodeId), {hash: String(nodeId), shortname: "Node "+nodeId});
-        let _node = nodeMap.get(String(nodeId));
+        currentState.nodeMap.set(String(nodeId), {hash: String(nodeId), shortname: "Node "+nodeId});
+        let _node = currentState.nodeMap.get(String(nodeId));
         graph.addNode(_node);
         nodeId ++;
     })
     sidemenu.appendChild(createNodeButton);
 
-})()
-
-
-
-function makeAbsoluteContext(element, svgDocument) {
-  return function(x,y) {
-    var offset = svgDocument.getBoundingClientRect();
-    var matrix = element.getScreenCTM();
-    return {
-      x: (matrix.a * x) + (matrix.c * y) + matrix.e - offset.left,
-      y: (matrix.b * x) + (matrix.d * y) + matrix.f - offset.top
-    };
-  };
-}
+})();
 
 
 // RXJS arrow tool drag
@@ -168,15 +129,31 @@ function makeAbsoluteContext(element, svgDocument) {
                 return pt.matrixTransform(svg.getScreenCTM().inverse());
             }
             return cursorPoint(mm)
-        }).takeUntil(mouseUpOnNodeObservable);
-    });
+        }).takeUntil(mouseUpOnNodeObservable)
+            .finally(() => {
+                // This is called when the sequence "completes".
+                // Here we make the arrow disappear by moving it to the corner.
+                // We also add the triplet.
+                tempDrawingArrow.end = {x: 0, y:0};
+                tempDrawingArrow.start = {x:0,y:0};
+                updateLine();
 
-    mouseUpOnNodeObservable.do(_ => {
-        tempDrawingArrow.end = {x: 0, y:0};
-        tempDrawingArrow.start = {x:0,y:0};
-    }).subscribe(function () {
-        updateLine();
+                // Create the triplet
+                if (currentState.currentNode.mouseOverNode && currentState.startedDragAt !== currentState.currentNode.data.hash){
+                    graph.addTriplet({subject: currentState.nodeMap.get(String(currentState.startedDragAt)),
+                        predicate: {type: " "},
+                        object: currentState.nodeMap.get(String(currentState.currentNode.data.hash))
+                    });
+                }
+            })
     })
+
+    // mouseUpOnNodeObservable.do(_ => {
+    //     tempDrawingArrow.end = {x: 0, y:0};
+    //     tempDrawingArrow.start = {x:0,y:0};
+    // }).subscribe(function () {
+    //     updateLine();
+    // })
 
     var sub = mousedrag.subscribe(function (d) {
         tempDrawingArrow.end = {x: d.x, y: d.y};
@@ -186,12 +163,12 @@ function makeAbsoluteContext(element, svgDocument) {
     function (error) {
         console.log("ERROR", error)
     },
-    function (d) {
+    function () {
         // FINISHED CODE
-        console.log("FINISHED", d)
-        tempDrawingArrow.start = {x: 0, y:0}
-        tempDrawingArrow.end = {x: 0, y:0}
+        console.log("FINISHED")
+        tempDrawingArrow.end = {x: 0, y:0};
+        tempDrawingArrow.start = {x:0,y:0};
         updateLine();
-    })
+    });
     
-})()
+})();
