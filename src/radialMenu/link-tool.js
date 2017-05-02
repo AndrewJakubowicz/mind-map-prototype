@@ -86,7 +86,7 @@ module.exports = function (graph, radialMenu, radialMenuArrowTool, currentState)
                 // Create the triplet
                 if (currentState.currentNode.mouseOverNode && currentState.startedDragAt !== currentState.currentNode.data.hash){
                     graph.addTriplet({subject: currentState.nodeMap.get(String(currentState.startedDragAt)),
-                        predicate: {type: " "},
+                        predicate: {type: document.getElementById('type-input').value || " "},
                         object: currentState.nodeMap.get(String(currentState.currentNode.data.hash))
                     });
                 }

@@ -55,7 +55,9 @@ const graph = function (currentState, radialMenu){
         },
         nodeDragStart: () => {
             radialMenu.style.display = "none";
-        }
+        },
+        edgeLabelText: (d) => d.edgeData.type
+
     });
 };
 
