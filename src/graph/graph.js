@@ -16,7 +16,6 @@ const graph = function (currentState, radialMenu){
             // use it to calculate the absolute center of the element
             var absoluteCenter = convert(middleX, middleY);
 
-
             radialMenu.style.display = "block"
             radialMenu.style.position = 'fixed';
             radialMenu.style.top = absoluteCenter.y
