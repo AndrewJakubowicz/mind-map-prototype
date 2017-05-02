@@ -2,6 +2,7 @@
 var makeAbsoluteContext = require('./src/graph/helpers/makeAbsoluteContext.js');
 
 var linkTool = require('./src/radialMenu/link-tool.js');
+var trashTool = require('./src/radialMenu/trash-tool.js');
 
 const currentState = {
     currentNode: {
@@ -48,13 +49,18 @@ radialMenu.addEventListener("mouseleave", () => {
 
 
 // Adds the create node button in the side menu.
-let nodeId = 0 ;
+let nodeId = 0;
+let shapes = ["rect", "circle",
+"capsule"];
 (() => {
     var sidemenu = document.getElementById("side-menu");
     var createNodeButton = document.createElement('button');
     createNodeButton.innerText = "Create Node";
     createNodeButton.addEventListener("click", () => {
-        currentState.nodeMap.set(String(nodeId), {hash: String(nodeId), shortname: "Node "+nodeId});
+        currentState.nodeMap.set(String(nodeId), {hash: String(nodeId),
+            shortname: "Node "+nodeId,
+            nodeShape: shapes[nodeId % shapes.length]
+        });
         let _node = currentState.nodeMap.get(String(nodeId));
         graph.addNode(_node);
         nodeId ++;
@@ -63,7 +69,12 @@ let nodeId = 0 ;
 
 })();
 
+/**
+ * Hooking up the menu items.
+ */
 
-// RXJS arrow tool drag
-// This sets up the linkTool.
+// LINK TOOL
 linkTool(graph, radialMenu, radialMenuArrowTool, currentState);
+
+// TRASH TOOL
+trashTool(currentState, graph, radialMenu);

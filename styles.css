@@ -25,8 +25,28 @@ body, html {
 
 #radial-menu > div{
     position: relative;
-    top: -50px;
-    left: -50px;
+    left: -10px;
     width: 0px;
     height: 0px;
+}
+#radial-menu img {
+    border-radius: 50%;
+    background-color: #FCE4EC;
+    width:20px;
+    height: 20px;
+}
+#radial-menu img:hover {
+    background-color: #F48FB1;
+}
+
+#menu-line-btn {
+    position: absolute;
+    top: -50px;
+    left: -50px;
+}
+
+#menu-delete-btn {
+    position: absolute;
+    top: -50px;
+    left: 50px;
 }

@@ -1,9 +1,26 @@
-var networkVizJS = require('networkVizJS');
+var networkVizJS = require('/Users/Spyr1014/Projects/repos/networkVizJS');
 var makeAbsoluteContext = require('./helpers/makeAbsoluteContext.js');
 
 const graph = function (currentState, radialMenu){ 
     return networkVizJS("graph",{
         layoutType: "linkDistance",
+        nodeShape: d => {
+            switch (d.nodeShape){
+                case "rect":
+                    return 'M16 48 L48 48 L48 16 L16 16 Z';
+                case "circle":
+                    return 'M20,40a20,20 0 1,0 40,0a20,20 0 1,0 -40,0';
+                case "capsule":
+                    let X = 37;
+                    let Y = -13;
+                    let p1x = 25 + X,
+                        p1y = 25 + Y,
+                        p2x = 75 + X,
+                        p3x = 100 + X,
+                        p4y = 50 + Y;
+                    return `M ${p1x} ${p1y} L ${p2x} ${p1y} C ${p3x} ${p1y} ${p3x} ${p4y} ${p2x} ${p4y} L ${p1x} ${p4y} C ${X} ${p4y} ${X} ${p1y} ${p1x} ${p1y} `
+            }
+        },
         mouseOverNode: (d, selection) => {
             currentState.currentNode.mouseOverNode = true;
             var bbox = selection.node().getBBox(),
