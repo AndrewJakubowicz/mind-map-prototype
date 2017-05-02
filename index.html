@@ -2,19 +2,27 @@
     <head>
         <meta charset="utf-8">
         <link rel="stylesheet" href="styles.css">
+        <!--Author: Andrew Jakubowicz-->
     </head>
     <body>
         <div class="wrapper">
             <div id="side-menu">
+                <h2>Prototype</h2>
+                <p>Hover over nodes for context sensitive menu.</p>
+                <p>Nodes are path elements, supporting any shape.</p>
 
-                <h2>Predicate</h2>
-                <input id="type-input" type="text">
+                <h2>Edge Label</h2>
+                <input id="type-input" type="text" placeholder="Edge labels here">
+                <p>Edge labels need to be defined before drawing them out.
+                    Alpha build: Write the edge label you want above, and then
+                    draw the edge.
+                </p>
                 <h2>-------</h2>
             </div>
             <div id="graph"></div>
         </div>
 
-        <div id="radial-menu">
+        <div id="radial-menu" style="display:none;">
             <div>
                 <img src="/node_modules/octicons/build/svg/arrow-right.svg" id="menu-line-btn">
                 <img src="/node_modules/octicons/build/svg/trashcan.svg" id="menu-delete-btn">
