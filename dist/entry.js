@@ -23,9 +23,6 @@ var radialMenu = document.getElementById("radial-menu");
 
 var graph = require('./graph/graph.js')(currentState, radialMenu);
 
-graph.nodeOptions.setNodeColor(function (d) {
-    return d.color;
-});
 // Set node click handler
 graph.nodeOptions.setClickNode(function (d, selection) {
     var userInput = window.prompt("Enter text for the node:", d.shortname);
@@ -52,7 +49,7 @@ var colors = ['#FFCDD2', '#C8E6C9', '#FF5252', '#EA80FC'];
     createNodeButton.innerText = "Create Node";
     createNodeButton.addEventListener("click", function () {
         currentState.nodeMap.set(String(nodeId), { hash: String(nodeId),
-            shortname: "Node " + nodeId,
+            shortname: ["Multi line", "node"],
             nodeShape: shapes[nodeId % shapes.length],
             color: colors[nodeId % colors.length]
         });

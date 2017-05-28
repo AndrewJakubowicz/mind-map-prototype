@@ -1,4 +1,4 @@
-var networkVizJS = require('/Users/Spyr1014/Projects/repos/networkVizJS');
+var networkVizJS = require('/Users/Spyr1014/Projects/repos/networkVizJS').default;
 var makeAbsoluteContext = require('./helpers/makeAbsoluteContext.js');
 
 const graph = function (currentState, radialMenu){ 
@@ -21,6 +21,7 @@ const graph = function (currentState, radialMenu){
                     return `M ${p1x} ${p1y} L ${p2x} ${p1y} C ${p3x} ${p1y} ${p3x} ${p4y} ${p2x} ${p4y} L ${p1x} ${p4y} C ${X} ${p4y} ${X} ${p1y} ${p1x} ${p1y} `
             }
         },
+        nodeToColor: d => d.color,
         mouseOverNode: (d, selection) => {
             currentState.currentNode.mouseOverNode = true;
             var bbox = selection.node().getBBox(),

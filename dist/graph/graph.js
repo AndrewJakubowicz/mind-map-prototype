@@ -1,6 +1,6 @@
 'use strict';
 
-var networkVizJS = require('/Users/Spyr1014/Projects/repos/networkVizJS');
+var networkVizJS = require('/Users/Spyr1014/Projects/repos/networkVizJS').default;
 var makeAbsoluteContext = require('./helpers/makeAbsoluteContext.js');
 
 var graph = function graph(currentState, radialMenu) {
@@ -22,6 +22,9 @@ var graph = function graph(currentState, radialMenu) {
                         p4y = 50 + Y;
                     return 'M ' + p1x + ' ' + p1y + ' L ' + p2x + ' ' + p1y + ' C ' + p3x + ' ' + p1y + ' ' + p3x + ' ' + p4y + ' ' + p2x + ' ' + p4y + ' L ' + p1x + ' ' + p4y + ' C ' + X + ' ' + p4y + ' ' + X + ' ' + p1y + ' ' + p1x + ' ' + p1y + ' ';
             }
+        },
+        nodeToColor: function nodeToColor(d) {
+            return d.color;
         },
         mouseOverNode: function mouseOverNode(d, selection) {
             currentState.currentNode.mouseOverNode = true;
