@@ -7,7 +7,6 @@
 var Rx = require('rxjs');
 var d3 = require('d3');
 var makeAbsoluteContext = require('../graph/helpers/makeAbsoluteContext.js');
-console.log("GROUP TOOL INIT")
 
 module.exports = function (graph, radialMenu, radialMenuGroupTool, currentState){
 
